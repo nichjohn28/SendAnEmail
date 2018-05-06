@@ -29,6 +29,7 @@
             </asp:Table>
             <div style="display: inline-block; margin-top: 15px">
                 <asp:Button ID="send" runat="server" Text="Send" Width="100" OnClick="send_Click" />
+                <asp:Label ID="Lblstatus" runat="server" Text="Label" Visible="false"></asp:Label>
             </div>
         </div>
     </form>

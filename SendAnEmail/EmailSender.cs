@@ -16,69 +16,81 @@ namespace SendAnEmail
     public class EmailSender : IEmailSender
     {
         private MessageDetails _details;
-        static bool mailSent = false;
         // contructor
         public EmailSender() { }
 
         public bool SendMessage(string from, string recipient, string subject, string body)
         {
             var result = false;
-            _details = SetMessageDetails(from, recipient, subject, body);
 
+            _details = SetMessageDetails(from, recipient, subject, body);
+            if (_details != null)
+            {
+                MailMessage mail = InitializeMail();
+                var smtpClient = new SmtpClient();
+                Object state = mail;
+
+                //event handler for asynchronous call
+                smtpClient.SendCompleted += new SendCompletedEventHandler(smtpClient_SendCompleted);
+
+                // attempt to send three times
+                for (int i = 0; i < 3; i++)
+                {
+                    try
+                    {
+                        //smtpClient.SendAsync(mail, state);
+                        _details.Status = true;
+                        result = true;
+                        break;
+                    }
+                    catch (Exception ex)
+                    {
+                        // log failed attempts
+                        string log = ex.ToString();
+                        result = false;
+                        continue;
+                    }
+                }
+                    // save message to the email table
+                    _details.Save();
+            }            
+
+            return result;
+        }
+
+        private MailMessage InitializeMail()
+        {
             var mail = new MailMessage();
             mail.From = new MailAddress(_details.Sender);
             mail.To.Add(new MailAddress(_details.Recipient));
             mail.Subject = _details.Subject;
             mail.Body = _details.Body;
-
-            var smtpClient = new SmtpClient();
-            Object state = mail;
-
-            //event handler for asynchronous call
-            smtpClient.SendCompleted += new SendCompletedEventHandler(smtpClient_SendCompleted);
-
-            // attempt to send three times
-            for (int i = 0; i < 3; i++)
-            {
-                try
-                {
-                    //smtpClient.SendAsync(mail, state);
-                    _details.Status = true;
-                    break;
-                }
-                catch (Exception ex)
-                {
-                    // log failed attempts
-                    string log = ex.ToString();
-                    continue;
-                }
-            }
-
-            // save message to the email table
-            _details.Save();
-
-            result = mailSent;
-            return result;
+            return mail;
         }
 
         void smtpClient_SendCompleted(object sender, System.ComponentModel.AsyncCompletedEventArgs e)
         {
             var mail = e.UserState as MailMessage;
 
-            if (!e.Cancelled && e.Error == null)
+            if (!e.Cancelled && e.Error != null)
             {
-                mailSent = true;
+                //log error;
             }
             
         }
 
         private MessageDetails SetMessageDetails(string from, string recipient, string subject, string body)
         {
-            return new MessageDetails(
-                    from,
-                    recipient,
-                    subject,
-                    body);
+            if (from != String.Empty && recipient != String.Empty && subject != String.Empty && body != String.Empty)
+            {
+                return new MessageDetails(
+                        from,
+                        recipient,
+                        subject,
+                        body);
+            }
+            else
+                return null;                
         }
     }
 

@@ -8,21 +8,28 @@ namespace SendAnEmail
 
         protected void Page_Load(object sender, EventArgs e)
         {
-            if (!IsPostBack)
-            {
-
-            }
         }        
 
         protected void send_Click(object sender, EventArgs e)
         {
-            string from = Request.Form["txtSender"];
-            string to = Request.Form["txtRecipient"];
-            string subject = Request.Form["txtSubject"];
-            string body = Request.Form["txtBody"];
+            var from = Request.Form["txtSender"];
+            var to = Request.Form["txtRecipient"];
+            var subject = Request.Form["txtSubject"];
+            var body = Request.Form["txtBody"];
 
-            MessageSender ms = new MessageSender(_messageSender);
-            ms.SendMessage(from, to, subject, body);
+            var ms = new MessageSender(_messageSender);
+            if (ms.SendMessage(from, to, subject, body))
+            {
+                Lblstatus.Text = "Message sent!";
+                Lblstatus.ForeColor = System.Drawing.Color.Green;
+            }
+            else
+            {
+                Lblstatus.Text = "Message failed to send.";
+                Lblstatus.ForeColor = System.Drawing.Color.Red;                
+            }
+            Lblstatus.Style["font-style"] = "italic";
+            Lblstatus.Visible = true;
         }
     }
 }
