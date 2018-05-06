@@ -1,0 +1,9 @@
+﻿################################################################################
+# This .gitignore file was automatically created by Microsoft(R) Visual Studio.
+################################################################################
+
+/SendAnEmail/obj/Debug
+/SendAnEmail/bin
+/SendAnEmail/Web.Debug.config
+/SendAnEmail/Web.Release.config
+/.vs/SendAnEmail/v15
